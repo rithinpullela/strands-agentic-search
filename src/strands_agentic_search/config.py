@@ -13,9 +13,15 @@ import os
 import sys
 from dataclasses import dataclass, field
 
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 
-load_dotenv()
+# Load a .env file so every parameter can be supplied from there. Discovery
+# order: an explicit ENV_FILE path, else the nearest .env walking up from the
+# current working directory (so it works when run from a subdirectory). Real
+# environment variables already set take precedence (override=False).
+_ENV_FILE = os.environ.get("ENV_FILE") or find_dotenv(usecwd=True)
+if _ENV_FILE:
+    load_dotenv(_ENV_FILE, override=False)
 
 
 def _env(key: str, default: str) -> str:
@@ -106,22 +112,51 @@ class MCPConfig:
         )
     )
 
+    # Variables the MCP server understands that we forward verbatim when set.
+    # The MCP client spawns the server with a restricted environment, so any
+    # var the server needs (OpenSearch connection + AWS auth for SigV4/Serverless)
+    # must be passed through explicitly — otherwise values placed in .env would
+    # never reach the child process.
+    _PASSTHROUGH_VARS: tuple[str, ...] = (
+        # OpenSearch connection / auth
+        "OPENSEARCH_USERNAME",
+        "OPENSEARCH_PASSWORD",
+        "OPENSEARCH_NO_AUTH",
+        # AWS auth (IAM role / SigV4 / Serverless paths in the MCP server)
+        "AWS_REGION",
+        "AWS_IAM_ARN",
+        "AWS_PROFILE",
+        "AWS_OPENSEARCH_SERVERLESS",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_SESSION_TOKEN",
+    )
+
     @property
     def server_env(self) -> dict[str, str]:
-        """Environment passed to the spawned MCP server (OpenSearch connection)."""
+        """Environment passed to the spawned MCP server (OpenSearch connection).
+
+        Everything here is sourced from the process environment — which includes
+        anything loaded from ``.env`` — so a single ``.env`` configures both this
+        app and the child MCP server.
+        """
         env: dict[str, str] = {}
-        # Basic-auth placeholders defaulting to a local cluster.
         env["OPENSEARCH_URL"] = _env("OPENSEARCH_URL", "http://localhost:9200")
-        username = os.environ.get("OPENSEARCH_USERNAME")
-        password = os.environ.get("OPENSEARCH_PASSWORD")
-        if username and password:
-            env["OPENSEARCH_USERNAME"] = username
-            env["OPENSEARCH_PASSWORD"] = password
-        else:
-            # No credentials supplied → tell the server to skip auth (local dev).
-            env["OPENSEARCH_NO_AUTH"] = _env("OPENSEARCH_NO_AUTH", "true")
         # SSL verification toggle (local clusters often use self-signed certs).
         env["OPENSEARCH_SSL_VERIFY"] = _env("OPENSEARCH_SSL_VERIFY", "false")
+
+        # Forward any recognized auth var that is actually set.
+        for key in self._PASSTHROUGH_VARS:
+            val = os.environ.get(key)
+            if val:
+                env[key] = val
+
+        # If no OpenSearch credentials were supplied at all, default to no-auth
+        # (local dev). Explicit OPENSEARCH_NO_AUTH / basic-auth / AWS auth wins.
+        has_basic = "OPENSEARCH_USERNAME" in env and "OPENSEARCH_PASSWORD" in env
+        has_aws = any(k.startswith("AWS_") for k in env)
+        if not has_basic and not has_aws and "OPENSEARCH_NO_AUTH" not in env:
+            env["OPENSEARCH_NO_AUTH"] = "true"
         return env
 
 

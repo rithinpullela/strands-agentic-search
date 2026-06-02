@@ -108,7 +108,21 @@ uv pip install -e ".[dev]"
 cp .env.example .env   # then edit as needed
 ```
 
-Configuration is entirely environment-driven — see [`.env.example`](.env.example). Highlights:
+### Configuration via `.env`
+
+Configuration is entirely environment-driven, and the app reads a **`.env` file**
+automatically on startup (via `python-dotenv`). Discovery order:
+
+1. an explicit path in the `ENV_FILE` environment variable, else
+2. the nearest `.env` found by walking up from the current working directory.
+
+Real environment variables already set in the shell take precedence over `.env`
+(so you can still override per-run). A single `.env` configures **both** this app
+*and* the child MCP server: recognized OpenSearch/AWS auth variables are forwarded
+to the spawned server process, since the MCP client launches it with a restricted
+environment. `.env` is git-ignored — never commit credentials.
+
+See [`.env.example`](.env.example) for the full list. Highlights:
 
 | Variable | Default | Purpose |
 |---|---|---|
