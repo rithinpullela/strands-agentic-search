@@ -1,0 +1,9 @@
+Question: ${parameters.question}
+Mapping: ${parameters.index_mapping:-}
+Query Fields: ${parameters.query_fields:-}
+Sample Document from index:${parameters.sample_document:-}
+In UTC:${parameters.current_time:-} format: yyyy-MM-dd'T'HH:mm:ss'Z'
+Embedding Model ID for Neural Search:${parameters.embedding_model_id:- not provided} 
+==== OUTPUT ====
+GIVE THE OUTPUT PART ONLY IN YOUR RESPONSE (a single JSON object)
+Output:

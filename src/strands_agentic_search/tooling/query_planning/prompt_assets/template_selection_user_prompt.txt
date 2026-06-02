@@ -1,0 +1,3 @@
+==== INPUTS ====
+question: ${parameters.question}
+search_templates: ${parameters.search_templates}

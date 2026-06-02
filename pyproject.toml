@@ -1,0 +1,41 @@
+[project]
+name = "strands-agentic-search"
+version = "0.1.0"
+description = "1:1 replication of OpenSearch agentic search (flow + conversational agents) using the Strands Agents SDK"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "strands-agents>=1.0.0",
+    "opensearch-mcp-server-py>=0.1.0",
+    "mcp>=1.2.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.6.0",
+    "jsonpath-ng>=1.6.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.27.0",
+]
+
+[project.scripts]
+strands-agentic-search = "strands_agentic_search.app.server:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+strands_agentic_search = ["agents/conversational/prompts/*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
