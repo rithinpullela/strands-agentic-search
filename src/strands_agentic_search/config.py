@@ -40,7 +40,7 @@ class LLMConfig:
     provider: str = field(default_factory=lambda: _env("LLM_PROVIDER", "bedrock"))
     model_id: str = field(
         default_factory=lambda: _env(
-            "BEDROCK_MODEL_ID", "us.anthropic.claude-sonnet-4-20250514-v1:0"
+            "BEDROCK_MODEL_ID", "us.anthropic.claude-sonnet-4-6"
         )
     )
     region_name: str = field(default_factory=lambda: _env("AWS_REGION", "us-west-2"))

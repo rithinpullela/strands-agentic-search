@@ -113,7 +113,7 @@ Configuration is entirely environment-driven — see [`.env.example`](.env.examp
 | Variable | Default | Purpose |
 |---|---|---|
 | `LLM_PROVIDER` | `bedrock` | `bedrock` \| `anthropic` \| `openai` |
-| `BEDROCK_MODEL_ID` | `us.anthropic.claude-sonnet-4-20250514-v1:0` | Bedrock model |
+| `BEDROCK_MODEL_ID` | `us.anthropic.claude-sonnet-4-6` | Bedrock model |
 | `AWS_REGION` | `us-west-2` | Bedrock region |
 | `QPT_GENERATION_TYPE` | `llmGenerated` | `llmGenerated` \| `user_templates` |
 | `QPT_RESPONSE_FILTER` | `$.output.message.content[0].text` | JSONPath into the model envelope |
